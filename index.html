@@ -50,7 +50,7 @@
       transform: scale(1.05);
     }
 
-    input, select {
+    input {
       padding: 10px;
       margin: 10px 0;
       width: 90%;
@@ -79,18 +79,17 @@
     }
 
     .form-screenshot-wrapper {
-  padding: 30px;
-  border: 4px solid #ff69b4;
-  border-radius: 25px;
-  background-color: rgba(255, 240, 245, 0.95);
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
-  text-align: center;
-  max-width: 320px; /* Smaller than form */
-  width: 85%;
-  color: #420624;
-  margin: 0 auto;
-}
-
+      padding: 30px;
+      border: 4px solid #ff69b4;
+      border-radius: 25px;
+      background-color: rgba(255, 240, 245, 0.95);
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      text-align: center;
+      max-width: 320px;
+      width: 85%;
+      color: #420624;
+      margin: 0 auto;
+    }
 
     .form-box {
       display: flex;
@@ -155,11 +154,12 @@
         <div class="form-screenshot-wrapper">
           <div class="form-box">
             <h2>Yay! Let's plan our date! 💖</h2>
-            <form onsubmit="submitForm(event)">
+            <form action="https://submit-form.com/AB8BX697G" method="POST" onsubmit="afterSubmit()">
               <input type="text" name="name" placeholder="Your name" required />
-              <input type="email" name="email" placeholder="Email (optional)" />
+              <input type="email" name="email" placeholder="Email" />
               <input type="text" name="food" placeholder="Your favorite food?" required />
               <input type="date" name="date" required />
+              <input type="hidden" name="_redirect" value="https://example.com/thank-you.html" />
               <button type="submit">Submit</button>
             </form>
           </div>
@@ -167,30 +167,11 @@
       `;
     }
 
-    function submitForm(e) {
-      e.preventDefault();
-      const name = e.target.name.value;
-      const email = e.target.email.value.trim();
-      const food = e.target.food.value;
-      const date = e.target.date.value;
-
+    function afterSubmit() {
       createConfetti();
       drawConfetti();
-
-      document.querySelector(".form-screenshot-wrapper").innerHTML = `
-        <div class="form-box">
-          <h2>🎉 Yay! You're going on a date 💖</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          ${email ? `<p><strong>Email:</strong> ${email}</p>` : ""}
-          <p><strong>Favorite Food:</strong> ${food}</p>
-          <p><strong>Date:</strong> ${date}</p>
-          <br/>
-          <p>📸 Take a screenshot of this and send it to me!</p>
-        </div>
-      `;
     }
 
-    // Confetti animation
     let confettiParticles = [];
     function createConfetti() {
       const canvas = document.getElementById("confettiCanvas");
