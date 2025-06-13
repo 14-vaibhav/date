@@ -6,7 +6,7 @@
   <style>
     body {
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
       background-image: url('https://thumbs.dreamstime.com/b/vector-romantic-pattern-polka-dot-red-heart-can-be-used-wallpaper-pattern-fill-web-page-background-surface-vector-101419728.jpg');
       background-size: cover;
       background-position: center;
@@ -14,6 +14,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 20px;
     }
 
     .message-box {
@@ -57,17 +58,24 @@
       border: 2px solid #ff69b4;
       border-radius: 8px;
       font-size: 16px;
+      box-sizing: border-box;
     }
 
     form button {
       margin-top: 15px;
-      padding: 10px 20px;
+      padding: 12px 25px;
       font-size: 18px;
       border-radius: 10px;
       background-color: #ff69b4;
       color: white;
       border: none;
       cursor: pointer;
+      transition: 0.3s;
+    }
+
+    form button:hover {
+      background-color: #ff1493;
+      transform: scale(1.05);
     }
 
     canvas#confettiCanvas {
@@ -85,8 +93,8 @@
       background-color: rgba(255, 240, 245, 0.95);
       box-shadow: 0 0 20px rgba(0,0,0,0.3);
       text-align: center;
-      max-width: 320px;
-      width: 85%;
+      max-width: 450px;
+      width: 90%;
       color: #420624;
       margin: 0 auto;
     }
@@ -97,7 +105,41 @@
       align-items: center;
     }
 
+    .screenshot-box {
+      padding: 25px;
+      border: 3px dashed #ff69b4;
+      border-radius: 15px;
+      background-color: rgba(255, 255, 255, 0.9);
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .screenshot-box h2 {
+      text-align: center;
+      color: #ff69b4;
+      margin-bottom: 20px;
+    }
+
+    .screenshot-box p {
+      margin: 8px 0;
+      font-size: 16px;
+    }
+
+    .screenshot-instruction {
+      background-color: #ffe6f0;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+      font-weight: bold;
+      text-align: center;
+    }
+
     audio { display: none; }
+
+    .loading {
+      color: #ff69b4;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -119,8 +161,8 @@
   <script>
     const messages = [
       "Haww ☹️", "Are you sure? 🥺", "Think again 😢", "But I'll bring flowers 💐",
-      "Don’t do this to me 😿", "I'm a great listener! 🎧", "Free pizza on the date? 🍕",
-      "We could be cute together 🥰", "You’re missing out... 😶", "Last chance to say yes 😬",
+      "Don't do this to me 😿", "I'm a great listener! 🎧", "Free pizza on the date? 🍕",
+      "We could be cute together 💕", "You're missing out... 😶", "Last chance to say yes 😬",
       "Not these many times 😭", "Please reconsider it or else I'll kms🐾", "Fine.. 😑"
     ];
     let noClickCount = 0;
@@ -130,7 +172,7 @@
       if (!musicPlayed) {
         const music = document.getElementById("bgMusic");
         music.currentTime = 6;
-        music.play();
+        music.play().catch(err => console.error("Audio playback failed:", err));
         musicPlayed = true;
       }
     }
@@ -165,43 +207,102 @@
         </div>
       `;
 
-      // Attach submit listener
-      setTimeout(() => {
-        const form = document.getElementById("dateForm");
-        form.addEventListener("submit", function (e) {
-          e.preventDefault();
+      // Attach form submission listener
+      const form = document.getElementById("dateForm");
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
 
-          const formData = new FormData(form);
+        // Show loading state
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
+        submitButton.textContent = "Submitting...";
+        submitButton.disabled = true;
 
-          fetch("https://submit-form.com/AB8BX697G", {
-            method: "POST",
-            body: formData,
-            headers: {
-              Accept: "application/json"
+        const formData = new FormData(form);
+        const name = form.name.value;
+        const email = form.email.value.trim();
+        const food = form.food.value;
+        const date = form.date.value;
+
+        console.log("Form data:", { name, email, food, date });
+
+        // Create screenshot box content immediately
+        const screenshotContent = `
+          <div class="form-box">
+            <div class="screenshot-box">
+              <h2>🎉 Date Details Submitted! 💖</h2>
+              <p><strong>Name:</strong> ${name}</p>
+              ${email ? `<p><strong>Email:</strong> ${email}</p>` : ""}
+              <p><strong>Favorite Food:</strong> ${food}</p>
+              <p><strong>Date:</strong> ${date}</p>
+              <div class="screenshot-instruction">
+                📸 Take a screenshot of this and send it to me!
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Convert FormData to JSON object for Formspark
+        const formObject = {};
+        formData.forEach((value, key) => {
+          formObject[key] = value;
+        });
+
+        fetch("https://submit-form.com/AB8BX697G", {
+          method: "POST",
+          body: JSON.stringify(formObject),
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          }
+        })
+          .then(response => {
+            console.log("Formspark response status:", response.status);
+            
+            // Show screenshot box regardless of response status
+            document.querySelector(".form-screenshot-wrapper").innerHTML = screenshotContent;
+            
+            // Trigger confetti after showing the screenshot box
+            setTimeout(() => {
+              createConfetti();
+              drawConfetti();
+            }, 300);
+
+            if (!response.ok) {
+              console.warn(`Form submission status: ${response.status}`);
+            } else {
+              console.log("Form submitted successfully!");
             }
-          }).then(() => {
-            const name = form.name.value;
-            const email = form.email.value.trim();
-            const food = form.food.value;
-            const date = form.date.value;
-
-            createConfetti();
-            drawConfetti();
-
+          })
+          .catch(error => {
+            console.error("Submission error:", error.message);
+            
+            // Still show screenshot box even if submission fails
             document.querySelector(".form-screenshot-wrapper").innerHTML = `
               <div class="form-box">
-                <h2>🎉 Yay! You're going on a date 💖</h2>
-                <p><strong>Name:</strong> ${name}</p>
-                ${email ? `<p><strong>Email:</strong> ${email}</p>` : ""}
-                <p><strong>Favorite Food:</strong> ${food}</p>
-                <p><strong>Date:</strong> ${date}</p>
-                <br/>
-                <p>📸 Take a screenshot of this and send it to me!</p>
+                <div class="screenshot-box">
+                  <h2>📋 Your Date Details</h2>
+                  <p><strong>Name:</strong> ${name}</p>
+                  ${email ? `<p><strong>Email:</strong> ${email}</p>` : ""}
+                  <p><strong>Favorite Food:</strong> ${food}</p>
+                  <p><strong>Date:</strong> ${date}</p>
+                  <div class="screenshot-instruction">
+                    📸 Take a screenshot of this and send it to me!
+                  </div>
+                  <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                    Note: Form submission encountered an issue, but your details are saved above.
+                  </p>
+                </div>
               </div>
             `;
+            
+            // Still trigger confetti
+            setTimeout(() => {
+              createConfetti();
+              drawConfetti();
+            }, 300);
           });
-        });
-      }, 100);
+      });
     }
 
     let confettiParticles = [];
