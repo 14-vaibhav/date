@@ -50,7 +50,7 @@
       transform: scale(1.05);
     }
 
-    input {
+    input, select {
       padding: 10px;
       margin: 10px 0;
       width: 90%;
@@ -154,7 +154,7 @@
         <div class="form-screenshot-wrapper">
           <div class="form-box">
             <h2>Yay! Let's plan our date! 💖</h2>
-            <form onsubmit="submitForm(event)">
+            <form id="dateForm">
               <input type="text" name="name" placeholder="Your name" required />
               <input type="email" name="email" placeholder="Email (optional)" />
               <input type="text" name="food" placeholder="Your favorite food?" required />
@@ -164,25 +164,28 @@
           </div>
         </div>
       `;
+
+      document.getElementById("dateForm").addEventListener("submit", submitForm);
     }
 
     function submitForm(e) {
       e.preventDefault();
       const form = e.target;
-      const name = form.name.value;
-      const email = form.email.value.trim();
-      const food = form.food.value;
-      const date = form.date.value;
+      const formData = new FormData(form);
 
       fetch("https://submit-form.com/AB8BX697G", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ name, email, food, date })
-      }).then(() => {
+        body: formData
+      })
+      .then(() => {
+        const name = form.name.value;
+        const email = form.email.value.trim();
+        const food = form.food.value;
+        const date = form.date.value;
+
         createConfetti();
         drawConfetti();
+
         document.querySelector(".form-screenshot-wrapper").innerHTML = `
           <div class="form-box">
             <h2>🎉 Yay! You're going on a date 💖</h2>
@@ -194,19 +197,20 @@
             <p>📸 Take a screenshot of this and send it to me!</p>
           </div>
         `;
-      }).catch((error) => {
-        alert("Submission failed. Please try again.");
-        console.error("Error submitting to Formspark:", error);
+      })
+      .catch(() => {
+        alert("Something went wrong! Please try again.");
       });
     }
 
-    // Confetti
+    // Confetti animation
     let confettiParticles = [];
     function createConfetti() {
       const canvas = document.getElementById("confettiCanvas");
       const ctx = canvas.getContext("2d");
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+
       confettiParticles = Array.from({ length: 150 }, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height - canvas.height,
@@ -215,6 +219,7 @@
         color: `hsl(${Math.random() * 360}, 100%, 70%)`,
         tilt: Math.floor(Math.random() * 10) - 5,
       }));
+
       setTimeout(() => {
         confettiParticles = [];
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -224,6 +229,7 @@
     function drawConfetti() {
       const canvas = document.getElementById("confettiCanvas");
       const ctx = canvas.getContext("2d");
+
       function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         confettiParticles.forEach(p => {
@@ -235,6 +241,7 @@
         updateConfetti();
         if (confettiParticles.length) requestAnimationFrame(draw);
       }
+
       draw();
     }
 
