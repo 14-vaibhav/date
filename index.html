@@ -165,7 +165,12 @@
         </div>
       `;
 
-      document.getElementById("dateForm").addEventListener("submit", submitForm);
+      setTimeout(() => {
+        const form = document.getElementById("dateForm");
+        if (form) {
+          form.addEventListener("submit", submitForm);
+        }
+      }, 100);
     }
 
     function submitForm(e) {
